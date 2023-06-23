@@ -5,10 +5,10 @@ class IssuesService {
     this.taskBoardController = taskBoardController;
   }
 
-  async fetchIssuesSummaryOfComponentsWithoutLead() {
+  async fetchComponentsWithoutLeadWithIssueCount() {
     const componentNames = await this.#fetchComponentNamesWithoutLead();
     const issues = await this.#fetchIssuesOfComponents(componentNames);
-    const issuesPerComponent = this.#groupIssuesByComponent(
+    const issuesPerComponent = this.#countIssuesByComponent(
       issues,
       componentNames
     );
@@ -27,24 +27,20 @@ class IssuesService {
   }
 
   async #fetchIssuesOfComponents(componentNames) {
-    const query = `project = SP AND component in (${componentNames.join(
-      ", "
-    )})`;
+    const query = `component in (${componentNames.join(", ")})`;
     return this.taskBoardController.fetchIssues(query);
   }
 
-  #groupIssuesByComponent(issues, componentNames) {
+  #countIssuesByComponent(issues, componentNames) {
     const issuesPerComponent = componentNames.reduce(
-      (acc, name) => ({ ...acc, [name]: [] }),
+      (acc, name) => ({ ...acc, [name]: 0 }),
       {}
     );
     issues.forEach((issue) => {
-      const { summary, components } = issue.fields;
+      const { components } = issue.fields;
       components
-        .filter((component) => issuesPerComponent[component.name])
-        .forEach((component) =>
-          issuesPerComponent[component.name].push(summary)
-        );
+        .filter((component) => issuesPerComponent[component.name] != null)
+        .forEach((component) => (issuesPerComponent[component.name] += 1));
     });
     return issuesPerComponent;
   }
