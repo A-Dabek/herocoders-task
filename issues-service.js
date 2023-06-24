@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('./jira-board-controller').Component} Component
+ * @typedef {import('./jira-board-controller').Issue} Issue
+ */
+
 class IssuesService {
   taskBoardController;
 
@@ -5,6 +10,10 @@ class IssuesService {
     this.taskBoardController = taskBoardController;
   }
 
+  /**
+   * Fetches components without a lead and the number of issues assigned to them.
+   * @returns {Promise<{[componentName: string]: number}>}
+   */
   async fetchComponentsWithoutLeadWithIssueCount() {
     const componentNames = await this.#fetchComponentNamesWithoutLead();
     const issues = await this.#fetchIssuesOfComponents(componentNames);
@@ -15,6 +24,9 @@ class IssuesService {
     return issuesPerComponent;
   }
 
+  /**
+   * @returns {Promise<string[]>}
+   */
   async #fetchComponentNamesWithoutLead() {
     const components = await this.taskBoardController.fetchComponents();
     const componentsWithoutLead = components.filter(
@@ -26,11 +38,21 @@ class IssuesService {
     return componentNames;
   }
 
+  /**
+   * @param {string[]} componentNames
+   * @returns {Promise<Issue[]>}
+   */
   async #fetchIssuesOfComponents(componentNames) {
-    const query = `component in (${componentNames.join(", ")})`;
-    return this.taskBoardController.fetchIssues(query);
+    return this.taskBoardController.fetchIssues({
+      hasComponent: componentNames,
+    });
   }
 
+  /**
+   * @param {Issue[]} issues
+   * @param {string[]} componentNames
+   * @returns {{[componentName: string]: number}}
+   */
   #countIssuesByComponent(issues, componentNames) {
     const issuesPerComponent = componentNames.reduce(
       (acc, name) => ({ ...acc, [name]: 0 }),

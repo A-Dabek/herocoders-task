@@ -8,15 +8,15 @@ const service = new IssuesService(controller);
  * Outputs
  *
  * Components without a lead:
- * Backend (issues: 1).
- * Synchronization (issues: 2).
- * Templates (issues: 5).
+ * Backend [1 issue(s)].
+ * Synchronization [2 issue(s)].
+ * Templates [5 issue(s)].
  */
 service
   .fetchComponentsWithoutLeadWithIssueCount()
   .then((issuesPerComponent) =>
     Object.entries(issuesPerComponent)
-      .map(([component, count]) => `${component} (issues: ${count}).\n`)
+      .map(([component, count]) => `${component} [${count} issue(s)].\n`)
       .join("")
   )
   .then((componentsSummary) =>
